@@ -1,6 +1,6 @@
 # Architecture
 
-This document is a maintainer-oriented map of Free Claude Code. It explains the
+This document is a maintainer-oriented map of Chinna-Free-Claude. It explains the
 runtime boundaries, request flows, provider abstraction, configuration model,
 optional messaging bridge, and verification strategy.
 

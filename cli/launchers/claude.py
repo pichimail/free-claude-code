@@ -21,7 +21,7 @@ _INSTALL_HINT = "Install Claude Code with: npm install -g @anthropic-ai/claude-c
 
 
 def launch(argv: Sequence[str] | None = None) -> None:
-    """Launch Claude Code with Free Claude Code proxy environment variables."""
+    """Launch Claude Code with Chinna-Free-Claude proxy environment variables."""
 
     settings = get_settings()
     proxy_root_url = local_proxy_root_url(settings)

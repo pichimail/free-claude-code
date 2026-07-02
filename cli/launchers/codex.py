@@ -38,7 +38,7 @@ _STRIPPED_CODEX_ENV_KEYS = frozenset(
 
 
 def launch(argv: Sequence[str] | None = None) -> None:
-    """Launch Codex CLI with Free Claude Code proxy configuration."""
+    """Launch Codex CLI with Chinna-Free-Claude proxy configuration."""
 
     settings = get_settings()
     proxy_root_url = local_proxy_root_url(settings)

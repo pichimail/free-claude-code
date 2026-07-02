@@ -148,7 +148,7 @@ def _codex_catalog_entry(
     return {
         "slug": candidate.slug,
         "display_name": candidate.display_name,
-        "description": "Free Claude Code provider model",
+        "description": "Chinna-Free-Claude provider model",
         "default_reasoning_level": "medium",
         "supported_reasoning_levels": SUPPORTED_REASONING_LEVELS,
         "shell_type": "shell_command",
