@@ -14,7 +14,7 @@ from cli.claude_env import (
 )
 from config.settings import get_settings
 
-from .common import preflight_proxy, resolve_client_binary, run_client_process
+from .common import ensure_proxy_running, resolve_client_binary, run_client_process
 
 _DISPLAY_NAME = "Claude Code"
 _INSTALL_HINT = "Install Claude Code with: npm install -g @anthropic-ai/claude-code"
@@ -25,32 +25,25 @@ def launch(argv: Sequence[str] | None = None) -> None:
 
     settings = get_settings()
     proxy_root_url = local_proxy_root_url(settings)
-    if error := preflight_proxy(proxy_root_url):
-        print(
-            f"Chinna-Free-Claude proxy is not reachable at {proxy_root_url}: {error}",
-            file=sys.stderr,
+    with ensure_proxy_running(proxy_root_url):
+        binary_name = claude_binary_name()
+        binary_path = resolve_client_binary(
+            binary_name=binary_name,
+            display_name=_DISPLAY_NAME,
+            install_hint=_INSTALL_HINT,
         )
-        print("Start it in another terminal with: cfc-server", file=sys.stderr)
-        raise SystemExit(1)
-
-    binary_name = claude_binary_name()
-    binary_path = resolve_client_binary(
-        binary_name=binary_name,
-        display_name=_DISPLAY_NAME,
-        install_hint=_INSTALL_HINT,
-    )
-    args = list(sys.argv[1:] if argv is None else argv)
-    run_client_process(
-        command=build_claude_launcher_command(binary_path=binary_path, argv=args),
-        env=build_claude_launcher_env(
-            proxy_root_url=proxy_root_url,
-            auth_token=settings.anthropic_auth_token,
-            base_env=os.environ,
-        ),
-        binary_name=binary_name,
-        display_name=_DISPLAY_NAME,
-        install_hint=_INSTALL_HINT,
-    )
+        args = list(sys.argv[1:] if argv is None else argv)
+        run_client_process(
+            command=build_claude_launcher_command(binary_path=binary_path, argv=args),
+            env=build_claude_launcher_env(
+                proxy_root_url=proxy_root_url,
+                auth_token=settings.anthropic_auth_token,
+                base_env=os.environ,
+            ),
+            binary_name=binary_name,
+            display_name=_DISPLAY_NAME,
+            install_hint=_INSTALL_HINT,
+        )
 
 
 def claude_binary_name() -> str:

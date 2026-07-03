@@ -15,7 +15,7 @@ from config.settings import Settings, get_settings
 from .codex_model_catalog import build_codex_model_catalog, write_codex_model_catalog
 from .common import (
     PROXY_PREFLIGHT_TIMEOUT_SECONDS,
-    preflight_proxy,
+    ensure_proxy_running,
     resolve_client_binary,
     run_client_process,
 )
@@ -42,38 +42,31 @@ def launch(argv: Sequence[str] | None = None) -> None:
 
     settings = get_settings()
     proxy_root_url = local_proxy_root_url(settings)
-    if error := preflight_proxy(proxy_root_url):
-        print(
-            f"Chinna-Free-Claude proxy is not reachable at {proxy_root_url}: {error}",
-            file=sys.stderr,
+    with ensure_proxy_running(proxy_root_url):
+        binary_name = codex_binary_name()
+        binary_path = resolve_client_binary(
+            binary_name=binary_name,
+            display_name=_DISPLAY_NAME,
+            install_hint=_INSTALL_HINT,
         )
-        print("Start it in another terminal with: cfc-server", file=sys.stderr)
-        raise SystemExit(1)
-
-    binary_name = codex_binary_name()
-    binary_path = resolve_client_binary(
-        binary_name=binary_name,
-        display_name=_DISPLAY_NAME,
-        install_hint=_INSTALL_HINT,
-    )
-    catalog_args = codex_model_catalog_config_args(proxy_root_url, settings)
-    args = list(sys.argv[1:] if argv is None else argv)
-    run_client_process(
-        command=build_codex_launcher_command(
-            binary_path=binary_path,
-            argv=args,
-            settings=settings,
-            proxy_root_url=proxy_root_url,
-            catalog_config_args=catalog_args,
-        ),
-        env=build_codex_launcher_env(
-            auth_token=settings.anthropic_auth_token,
-            base_env=os.environ,
-        ),
-        binary_name=binary_name,
-        display_name=_DISPLAY_NAME,
-        install_hint=_INSTALL_HINT,
-    )
+        catalog_args = codex_model_catalog_config_args(proxy_root_url, settings)
+        args = list(sys.argv[1:] if argv is None else argv)
+        run_client_process(
+            command=build_codex_launcher_command(
+                binary_path=binary_path,
+                argv=args,
+                settings=settings,
+                proxy_root_url=proxy_root_url,
+                catalog_config_args=catalog_args,
+            ),
+            env=build_codex_launcher_env(
+                auth_token=settings.anthropic_auth_token,
+                base_env=os.environ,
+            ),
+            binary_name=binary_name,
+            display_name=_DISPLAY_NAME,
+            install_hint=_INSTALL_HINT,
+        )
 
 
 def codex_binary_name() -> str:

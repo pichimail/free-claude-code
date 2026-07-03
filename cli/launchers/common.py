@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import sys
+import time
 from collections.abc import Mapping
+from contextlib import contextmanager
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -17,6 +20,11 @@ from cli.process_registry import (
 
 PROXY_PREFLIGHT_PATH = "/health"
 PROXY_PREFLIGHT_TIMEOUT_SECONDS = 1.5
+PROXY_STARTUP_TIMEOUT_SECONDS = 20.0
+PROXY_STARTUP_POLL_INTERVAL_SECONDS = 0.25
+SERVER_BINARY_NAME = "cfc-server"
+SERVER_DISPLAY_NAME = "Chinna-Free-Claude proxy"
+SERVER_INSTALL_HINT = "Install Chinna-Free-Claude so cfc-server is on PATH."
 
 
 def preflight_proxy(proxy_root_url: str) -> str | None:
@@ -37,6 +45,61 @@ def preflight_proxy(proxy_root_url: str) -> str | None:
     if not 200 <= status_code < 300:
         return f"returned HTTP {status_code}"
     return None
+
+
+@contextmanager
+def ensure_proxy_running(proxy_root_url: str):
+    """Yield after the local proxy is healthy, starting it if needed."""
+
+    if preflight_proxy(proxy_root_url) is None:
+        yield
+        return
+
+    print(
+        "Chinna-Free-Claude proxy is not reachable; starting cfc-server for this "
+        f"session at {proxy_root_url}",
+        file=sys.stderr,
+    )
+    server_command = resolve_client_binary(
+        binary_name=SERVER_BINARY_NAME,
+        display_name=SERVER_DISPLAY_NAME,
+        install_hint=SERVER_INSTALL_HINT,
+    )
+    process = subprocess.Popen([server_command], env=os.environ.copy())
+    if process.pid:
+        register_pid(process.pid)
+
+    try:
+        error = _wait_for_proxy_ready(proxy_root_url, process)
+        if error is not None:
+            raise SystemExit(
+                f"Could not start {SERVER_BINARY_NAME} for {proxy_root_url}: {error}"
+            )
+        yield
+    finally:
+        if process.pid:
+            if process.poll() is None:
+                kill_pid_tree_best_effort(process.pid)
+            process.wait()
+            unregister_pid(process.pid)
+
+
+def _wait_for_proxy_ready(
+    proxy_root_url: str, process: subprocess.Popen[bytes]
+) -> str | None:
+    """Wait until the local proxy health check succeeds or the server exits."""
+
+    deadline = time.monotonic() + PROXY_STARTUP_TIMEOUT_SECONDS
+    last_error = "timed out waiting for cfc-server to become healthy"
+
+    while time.monotonic() < deadline:
+        if process.poll() is not None:
+            return f"exited with code {process.returncode}"
+        if preflight_proxy(proxy_root_url) is None:
+            return None
+        time.sleep(PROXY_STARTUP_POLL_INTERVAL_SECONDS)
+
+    return last_error
 
 
 def resolve_client_binary(

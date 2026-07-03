@@ -132,7 +132,7 @@ The default model is already set to `nvidia_nim/nvidia/nemotron-3-super-120b-a12
 
 ### 4. Run Your Coding Agent
 
-Keep `cfc-server` running while you work.
+You can keep `cfc-server` running while you work, or just launch `cfc-claude`/`cfc-codex`; they start the proxy for the session if it is not already up.
 
 **Claude Code**
 
@@ -638,8 +638,8 @@ CI also enforces a ban on `# type: ignore` / `# ty: ignore` suppressions; `scrip
 
 - `cfc-server`: starts the proxy with configured host and port.
 - `cfc-init`: optional advanced scaffold for `~/.cfc/.env`; prefer the **Admin UI** for normal configuration.
-- `cfc-claude`: launches Claude Code with the configured local proxy URL, an auth-token env var or `cfc-no-auth` sentinel, model discovery flag, and a 190k `CLAUDE_CODE_AUTO_COMPACT_WINDOW` for auto-compaction.
-- `cfc-codex`: launches Codex with ephemeral `cfc` provider config pointing at the local proxy's `/v1/responses` endpoint, a generated native `/model` picker catalog, and `CFC_CODEX_API_KEY` from the Admin UI auth token.
+- `cfc-claude`: launches Claude Code with the configured local proxy URL, an auth-token env var or `cfc-no-auth` sentinel, model discovery flag, and a 190k `CLAUDE_CODE_AUTO_COMPACT_WINDOW` for auto-compaction. If the proxy is down, it starts `cfc-server` for that session.
+- `cfc-codex`: launches Codex with ephemeral `cfc` provider config pointing at the local proxy's `/v1/responses` endpoint, a generated native `/model` picker catalog, and `CFC_CODEX_API_KEY` from the Admin UI auth token. If the proxy is down, it starts `cfc-server` for that session.
 
 ### 5. Extending
 

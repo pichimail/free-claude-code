@@ -59,6 +59,15 @@ class _JsonResponse:
         return json.dumps(self._payload).encode("utf-8")
 
 
+def _make_process(pid: int, return_code: int, *, poll_value: int | None = None):
+    process = MagicMock()
+    process.pid = pid
+    process.poll.return_value = poll_value
+    process.wait.return_value = return_code
+    process.returncode = return_code
+    return process
+
+
 def test_init_creates_env_file(tmp_path: Path) -> None:
     """init() creates .env from the bundled template when it doesn't exist yet."""
     output, env_file = _run_init(tmp_path)
@@ -357,7 +366,7 @@ def test_launch_claude_passes_args_and_child_env(
 
     with (
         patch("cli.launchers.claude.get_settings", return_value=settings),
-        patch("cli.launchers.claude.preflight_proxy", return_value=None),
+        patch("cli.launchers.common.preflight_proxy", return_value=None),
         patch("cli.launchers.common.shutil.which", return_value="resolved-claude.cmd"),
         patch("cli.launchers.common.subprocess.Popen") as popen,
         patch("cli.launchers.common.register_pid") as register_pid,
@@ -419,7 +428,7 @@ def test_launch_codex_passes_responses_config_and_child_env(
 
     with (
         patch("cli.launchers.codex.get_settings", return_value=settings),
-        patch("cli.launchers.codex.preflight_proxy", return_value=None),
+        patch("cli.launchers.common.preflight_proxy", return_value=None),
         patch("cli.launchers.common.shutil.which", return_value="resolved-codex.cmd"),
         patch(
             "cli.launchers.codex.codex_model_catalog_path", return_value=catalog_path
@@ -471,7 +480,7 @@ def test_launch_codex_catalog_failure_warns_and_continues(
 
     with (
         patch("cli.launchers.codex.get_settings", return_value=settings),
-        patch("cli.launchers.codex.preflight_proxy", return_value=None),
+        patch("cli.launchers.common.preflight_proxy", return_value=None),
         patch("cli.launchers.common.shutil.which", return_value="resolved-codex.cmd"),
         patch(
             "cli.launchers.codex.codex_model_catalog_path",
@@ -503,7 +512,7 @@ def test_launch_claude_keyboard_interrupt_kills_child_tree() -> None:
 
     with (
         patch("cli.launchers.claude.get_settings", return_value=settings),
-        patch("cli.launchers.claude.preflight_proxy", return_value=None),
+        patch("cli.launchers.common.preflight_proxy", return_value=None),
         patch("cli.launchers.common.shutil.which", return_value="resolved-claude.cmd"),
         patch("cli.launchers.common.subprocess.Popen") as popen,
         patch("cli.launchers.common.register_pid"),
@@ -529,7 +538,7 @@ def test_launch_claude_exits_when_command_cannot_be_resolved(
     settings = _launcher_settings()
     with (
         patch("cli.launchers.claude.get_settings", return_value=settings),
-        patch("cli.launchers.claude.preflight_proxy", return_value=None),
+        patch("cli.launchers.common.preflight_proxy", return_value=None),
         patch("cli.launchers.common.shutil.which", return_value=None),
         patch("cli.launchers.common.subprocess.Popen") as popen,
         pytest.raises(SystemExit) as exc_info,
@@ -543,24 +552,52 @@ def test_launch_claude_exits_when_command_cannot_be_resolved(
     assert "npm install -g @anthropic-ai/claude-code" in captured.err
 
 
-def test_launch_claude_unreachable_proxy_exits_with_hint(
+def test_launch_claude_starts_proxy_when_unreachable(
+    monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     from cli.launchers.claude import launch
 
     settings = _launcher_settings(port=9393)
+    server_process = _make_process(pid=222, return_code=0)
+    client_process = _make_process(pid=12345, return_code=7)
+    which_calls: list[str] = []
+
+    def fake_which(binary_name: str) -> str | None:
+        which_calls.append(binary_name)
+        return {
+            "cfc-server": "resolved-cfc-server.cmd",
+            "claude": "resolved-claude.cmd",
+        }.get(binary_name)
+
     with (
         patch("cli.launchers.claude.get_settings", return_value=settings),
         patch(
-            "cli.launchers.claude.preflight_proxy", return_value="connection refused"
+            "cli.launchers.common.preflight_proxy",
+            side_effect=["connection refused", None],
         ),
-        patch("cli.launchers.common.subprocess.Popen") as popen,
+        patch("cli.launchers.common.shutil.which", side_effect=fake_which),
+        patch(
+            "cli.launchers.common.subprocess.Popen",
+            side_effect=[server_process, client_process],
+        ) as popen,
+        patch("cli.launchers.common.register_pid") as register_pid,
+        patch("cli.launchers.common.unregister_pid") as unregister_pid,
+        patch("cli.launchers.common.kill_pid_tree_best_effort") as kill_tree,
+        patch("cli.launchers.common.time.sleep"),
         pytest.raises(SystemExit) as exc_info,
     ):
         launch([])
 
-    assert exc_info.value.code == 1
-    popen.assert_not_called()
+    assert exc_info.value.code == 7
+    assert which_calls == ["cfc-server", "claude"]
+    assert popen.call_args_list[0].args[0] == ["resolved-cfc-server.cmd"]
+    assert popen.call_args_list[1].args[0] == ["resolved-claude.cmd"]
     captured = capsys.readouterr()
+    assert "starting cfc-server for this session" in captured.err
     assert "http://127.0.0.1:9393" in captured.err
-    assert "cfc-server" in captured.err
+    register_pid.assert_any_call(222)
+    register_pid.assert_any_call(12345)
+    unregister_pid.assert_any_call(12345)
+    unregister_pid.assert_any_call(222)
+    kill_tree.assert_called_once_with(222)

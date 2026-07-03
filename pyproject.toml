@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "chinna-free-claude"
-version = "3.0.0"
+version = "3.0.1"
 description = "Chinna Free Claude - Middleware between Claude Code CLI (Anthropic API) and NVIDIA NIM"
 readme = "README.md"
 requires-python = ">=3.14.0"
