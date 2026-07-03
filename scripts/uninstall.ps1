@@ -8,21 +8,21 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$PackageName = "free-claude-code"
-$FccHomeDirname = ".fcc"
-$FccCommands = @(
-    "fcc-server",
-    "fcc-claude",
-    "fcc-codex",
-    "fcc-init",
-    "free-claude-code"
+$PackageName = "chinna-free-claude"
+$CfcHomeDirname = ".cfc"
+$CfcCommands = @(
+    "cfc-server",
+    "cfc-claude",
+    "cfc-codex",
+    "cfc-init",
+    "chinna-free-claude"
 )
 
 function Show-Usage {
     @"
 Usage: uninstall.ps1 [options]
 
-Removes the Free Claude Code uv tool and deletes ~/.fcc/.
+Removes the Chinna-Free-Claude uv tool and deletes ~/.cfc/.
 Does not remove uv, Claude Code, Codex, or the uv-managed Python runtime.
 
 Options:
@@ -82,10 +82,10 @@ function Add-UvToPath {
     Add-PathEntry (Join-Path $HOME ".cargo\bin")
 }
 
-function Assert-NoFccProcessesRunning {
+function Assert-NoCfcProcessesRunning {
     $running = @()
 
-    foreach ($commandName in $FccCommands) {
+    foreach ($commandName in $CfcCommands) {
         $processes = @(Get-Process -Name $commandName -ErrorAction SilentlyContinue)
         if ($processes.Count -gt 0) {
             $running += $commandName
@@ -93,11 +93,11 @@ function Assert-NoFccProcessesRunning {
     }
 
     if ($running.Count -gt 0) {
-        throw "Free Claude Code is still running ($($running -join ', ')). Stop those processes, then rerun uninstall."
+        throw "Chinna-Free-Claude is still running ($($running -join ', ')). Stop those processes, then rerun uninstall."
     }
 }
 
-function Uninstall-FreeClaudeCode {
+function Uninstall-ChinnaFreeClaude {
     Add-UvToPath
 
     if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
@@ -116,13 +116,13 @@ function Uninstall-FreeClaudeCode {
                 return
             }
             if (Test-MissingUvToolError -Output $output) {
-                Write-Host "Free Claude Code uv tool not installed or already removed; skipping uv tool uninstall."
+                Write-Host "Chinna-Free-Claude uv tool not installed or already removed; skipping uv tool uninstall."
                 return
             }
             if (-not [string]::IsNullOrWhiteSpace($output)) {
                 [Console]::Error.WriteLine($output)
             }
-            throw "uv tool uninstall $PackageName failed with exit code $exitCode; aborting before deleting ~/.fcc."
+            throw "uv tool uninstall $PackageName failed with exit code $exitCode; aborting before deleting ~/.cfc."
         }
         finally {
             $ErrorActionPreference = $previousErrorActionPreference
@@ -130,24 +130,24 @@ function Uninstall-FreeClaudeCode {
     }
 }
 
-function Purge-FccHome {
-    $fccHome = Join-Path $HOME $FccHomeDirname
-    if (-not (Test-Path -LiteralPath $fccHome)) {
-        Write-Host "No FCC config directory at $fccHome; skipping purge."
+function Purge-CfcHome {
+    $cfcHome = Join-Path $HOME $CfcHomeDirname
+    if (-not (Test-Path -LiteralPath $cfcHome)) {
+        Write-Host "No FCC config directory at $cfcHome; skipping purge."
         return
     }
 
     $commandText = @(
         "Remove-Item",
         "-LiteralPath",
-        (Format-Argument $fccHome),
+        (Format-Argument $cfcHome),
         "-Recurse",
         "-Force"
     ) -join " "
     Write-Host "+ $commandText"
 
     if (-not $DryRun) {
-        Remove-Item -LiteralPath $fccHome -Recurse -Force
+        Remove-Item -LiteralPath $cfcHome -Recurse -Force
     }
 }
 
@@ -161,15 +161,15 @@ if ($RemainingArgs.Count -gt 0) {
     throw "Unknown option: $($RemainingArgs -join ' ')"
 }
 
-Write-Step "Checking for running Free Claude Code processes"
-Assert-NoFccProcessesRunning
+Write-Step "Checking for running Chinna-Free-Claude processes"
+Assert-NoCfcProcessesRunning
 
-Write-Step "Removing Free Claude Code uv tool"
-Uninstall-FreeClaudeCode
+Write-Step "Removing Chinna-Free-Claude uv tool"
+Uninstall-ChinnaFreeClaude
 
-Write-Step "Purging FCC config and data from ~/.fcc"
-Purge-FccHome
+Write-Step "Purging FCC config and data from ~/.cfc"
+Purge-CfcHome
 
 Write-Host ""
-Write-Host "Free Claude Code has been removed."
+Write-Host "Chinna-Free-Claude has been removed."
 Write-Host "uv, Claude Code, Codex, and the uv-managed Python runtime were left installed."

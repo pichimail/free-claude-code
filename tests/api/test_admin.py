@@ -28,7 +28,7 @@ def _clear_process_config(monkeypatch) -> None:
         "NVIDIA_NIM_API_KEY",
         "OPENROUTER_API_KEY",
         "ANTHROPIC_AUTH_TOKEN",
-        "FCC_ENV_FILE",
+        "CFC_ENV_FILE",
         "CLOUDFLARE_API_TOKEN",
         "CLOUDFLARE_ACCOUNT_ID",
         "HOST",
@@ -125,7 +125,7 @@ def test_admin_config_masks_secrets_and_exposes_manifest(monkeypatch, tmp_path):
 def test_admin_config_preserves_managed_env_source_contract(monkeypatch, tmp_path):
     _set_home(monkeypatch, tmp_path)
     _clear_process_config(monkeypatch)
-    env_file = tmp_path / ".fcc" / ".env"
+    env_file = tmp_path / ".cfc" / ".env"
     env_file.parent.mkdir(parents=True)
     env_file.write_text("MODEL=open_router/managed-model\n", encoding="utf-8")
     app = create_app(lifespan_enabled=False)
@@ -176,7 +176,7 @@ def test_admin_apply_writes_complete_managed_env_and_masks_preview(
     body = response.json()
     assert body["applied"] is True
     assert "OPENROUTER_API_KEY=********" in body["env_preview"]
-    env_file = tmp_path / ".fcc" / ".env"
+    env_file = tmp_path / ".cfc" / ".env"
     text = env_file.read_text("utf-8")
     assert "MODEL=open_router/test-model" in text
     assert "OPENROUTER_API_KEY=router-secret" in text
@@ -208,7 +208,7 @@ def test_admin_apply_writes_fireworks_key_and_masks_preview(monkeypatch, tmp_pat
     body = response.json()
     assert body["applied"] is True
     assert "FIREWORKS_API_KEY=********" in body["env_preview"]
-    env_file = tmp_path / ".fcc" / ".env"
+    env_file = tmp_path / ".cfc" / ".env"
     text = env_file.read_text(encoding="utf-8")
     assert "MODEL=fireworks/test-model" in text
     assert "FIREWORKS_API_KEY=fw-secret" in text
@@ -233,7 +233,7 @@ def test_admin_apply_writes_gemini_key_and_masks_preview(monkeypatch, tmp_path):
     body = response.json()
     assert body["applied"] is True
     assert "GEMINI_API_KEY=********" in body["env_preview"]
-    env_file = tmp_path / ".fcc" / ".env"
+    env_file = tmp_path / ".cfc" / ".env"
     text = env_file.read_text(encoding="utf-8")
     assert "MODEL=gemini/models/gemini-3.1-flash-lite" in text
     assert "GEMINI_API_KEY=gm-secret" in text
@@ -258,7 +258,7 @@ def test_admin_apply_writes_groq_key_and_masks_preview(monkeypatch, tmp_path):
     body = response.json()
     assert body["applied"] is True
     assert "GROQ_API_KEY=********" in body["env_preview"]
-    env_file = tmp_path / ".fcc" / ".env"
+    env_file = tmp_path / ".cfc" / ".env"
     text = env_file.read_text(encoding="utf-8")
     assert "MODEL=groq/llama-3.3-70b-versatile" in text
     assert "GROQ_API_KEY=gq-secret" in text
@@ -283,7 +283,7 @@ def test_admin_apply_writes_cerebras_key_and_masks_preview(monkeypatch, tmp_path
     body = response.json()
     assert body["applied"] is True
     assert "CEREBRAS_API_KEY=********" in body["env_preview"]
-    env_file = tmp_path / ".fcc" / ".env"
+    env_file = tmp_path / ".cfc" / ".env"
     text = env_file.read_text(encoding="utf-8")
     assert "MODEL=cerebras/llama3.1-8b" in text
     assert "CEREBRAS_API_KEY=cb-secret" in text
@@ -310,7 +310,7 @@ def test_admin_apply_writes_cloudflare_fields_and_masks_preview(monkeypatch, tmp
     assert body["applied"] is True
     assert "CLOUDFLARE_API_TOKEN=********" in body["env_preview"]
     assert "CLOUDFLARE_ACCOUNT_ID=cf-account" in body["env_preview"]
-    env_file = tmp_path / ".fcc" / ".env"
+    env_file = tmp_path / ".cfc" / ".env"
     text = env_file.read_text(encoding="utf-8")
     assert "MODEL=cloudflare/anthropic/claude-sonnet-4-5" in text
     assert "CLOUDFLARE_API_TOKEN=cf-secret" in text
@@ -322,14 +322,14 @@ def test_admin_apply_preserves_hidden_diagnostics_and_smoke_values(
 ):
     _set_home(monkeypatch, tmp_path)
     _clear_process_config(monkeypatch)
-    env_file = tmp_path / ".fcc" / ".env"
+    env_file = tmp_path / ".cfc" / ".env"
     env_file.parent.mkdir(parents=True)
     env_file.write_text(
         "\n".join(
             [
                 "MODEL=nvidia_nim/old-model",
                 "LOG_RAW_API_PAYLOADS=true",
-                "FCC_SMOKE_MODEL_ZAI=zai/smoke-model",
+                "CFC_SMOKE_MODEL_ZAI=zai/smoke-model",
                 "",
             ]
         ),
@@ -348,13 +348,13 @@ def test_admin_apply_preserves_hidden_diagnostics_and_smoke_values(
     text = env_file.read_text("utf-8")
     assert "MODEL=open_router/test-model" in text
     assert "LOG_RAW_API_PAYLOADS=true" in text
-    assert "FCC_SMOKE_MODEL_ZAI=zai/smoke-model" in text
+    assert "CFC_SMOKE_MODEL_ZAI=zai/smoke-model" in text
 
 
 def test_admin_apply_omits_stale_zai_base_url(monkeypatch, tmp_path):
     _set_home(monkeypatch, tmp_path)
     _clear_process_config(monkeypatch)
-    env_file = tmp_path / ".fcc" / ".env"
+    env_file = tmp_path / ".cfc" / ".env"
     env_file.parent.mkdir(parents=True)
     env_file.write_text(
         "\n".join(
@@ -385,7 +385,7 @@ def test_admin_apply_omits_stale_zai_base_url(monkeypatch, tmp_path):
 def test_admin_apply_omits_stale_fixed_claude_runtime_settings(monkeypatch, tmp_path):
     _set_home(monkeypatch, tmp_path)
     _clear_process_config(monkeypatch)
-    env_file = tmp_path / ".fcc" / ".env"
+    env_file = tmp_path / ".cfc" / ".env"
     env_file.parent.mkdir(parents=True)
     env_file.write_text(
         "\n".join(
@@ -482,7 +482,7 @@ def test_admin_process_env_values_are_locked_and_not_written(monkeypatch, tmp_pa
     )
 
     assert response.status_code == 200
-    env_file = tmp_path / ".fcc" / ".env"
+    env_file = tmp_path / ".cfc" / ".env"
     assert "deepseek/managed-model" not in env_file.read_text("utf-8")
 
 
@@ -507,7 +507,7 @@ def test_admin_first_apply_migrates_repo_env(monkeypatch, tmp_path):
     )
 
     assert response.status_code == 200
-    managed_text = (tmp_path / ".fcc" / ".env").read_text("utf-8")
+    managed_text = (tmp_path / ".cfc" / ".env").read_text("utf-8")
     assert "MODEL=deepseek/deepseek-chat" in managed_text
     assert "DEEPSEEK_API_KEY=deepseek-secret" in managed_text
 

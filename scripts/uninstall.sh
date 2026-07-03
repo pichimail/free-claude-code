@@ -1,9 +1,9 @@
 #!/bin/sh
 set -eu
 
-PACKAGE_NAME="free-claude-code"
-FCC_HOME_DIRNAME=".fcc"
-FCC_COMMANDS="fcc-server fcc-claude fcc-codex fcc-init free-claude-code"
+PACKAGE_NAME="chinna-free-claude"
+CFC_HOME_DIRNAME=".cfc"
+CFC_COMMANDS="cfc-server cfc-claude cfc-codex cfc-init chinna-free-claude"
 
 dry_run=0
 
@@ -11,7 +11,7 @@ show_usage() {
     cat <<'USAGE'
 Usage: uninstall.sh [options]
 
-Removes the Free Claude Code uv tool and deletes ~/.fcc/.
+Removes the Chinna-Free-Claude uv tool and deletes ~/.cfc/.
 Does not remove uv, Claude Code, Codex, or the uv-managed Python runtime.
 
 Options:
@@ -86,7 +86,7 @@ add_uv_to_path() {
     export PATH
 }
 
-is_fcc_command_running() {
+is_cfc_command_running() {
     command_name=$1
 
     if command -v pgrep >/dev/null 2>&1; then
@@ -106,21 +106,21 @@ is_fcc_command_running() {
     return 1
 }
 
-assert_no_fcc_processes_running() {
+assert_no_cfc_processes_running() {
     running=""
 
-    for command_name in $FCC_COMMANDS; do
-        if is_fcc_command_running "$command_name"; then
+    for command_name in $CFC_COMMANDS; do
+        if is_cfc_command_running "$command_name"; then
             running="${running} ${command_name}"
         fi
     done
 
     if [ -n "$running" ]; then
-        fail "Free Claude Code is still running (${running# }). Stop those processes, then rerun uninstall."
+        fail "Chinna-Free-Claude is still running (${running# }). Stop those processes, then rerun uninstall."
     fi
 }
 
-uninstall_free_claude_code() {
+uninstall_chinna_free_claude() {
     add_uv_to_path
 
     if ! command -v uv >/dev/null 2>&1; then
@@ -136,26 +136,26 @@ uninstall_free_claude_code() {
             status=$?
         fi
         if is_missing_uv_tool_error "$output"; then
-            printf 'Free Claude Code uv tool not installed or already removed; skipping uv tool uninstall.\n'
+            printf 'Chinna-Free-Claude uv tool not installed or already removed; skipping uv tool uninstall.\n'
             return 0
         fi
         if [ -n "$output" ]; then
             printf '%s\n' "$output" >&2
         fi
-        fail "uv tool uninstall $PACKAGE_NAME failed with exit code $status; aborting before deleting ~/.fcc."
+        fail "uv tool uninstall $PACKAGE_NAME failed with exit code $status; aborting before deleting ~/.cfc."
     fi
 }
 
-purge_fcc_home() {
-    [ -n "${HOME:-}" ] || fail "HOME is not set; cannot locate ~/.fcc."
+purge_cfc_home() {
+    [ -n "${HOME:-}" ] || fail "HOME is not set; cannot locate ~/.cfc."
 
-    fcc_home="$HOME/$FCC_HOME_DIRNAME"
-    if [ ! -e "$fcc_home" ]; then
-        printf 'No FCC config directory at %s; skipping purge.\n' "$fcc_home"
+    cfc_home="$HOME/$CFC_HOME_DIRNAME"
+    if [ ! -e "$cfc_home" ]; then
+        printf 'No CFC config directory at %s; skipping purge.\n' "$cfc_home"
         return 0
     fi
 
-    run rm -rf "$fcc_home"
+    run rm -rf "$cfc_home"
 }
 
 parse_args() {
@@ -179,14 +179,14 @@ parse_args() {
 
 parse_args "$@"
 
-step "Checking for running Free Claude Code processes"
-assert_no_fcc_processes_running
+step "Checking for running Chinna-Free-Claude processes"
+assert_no_cfc_processes_running
 
-step "Removing Free Claude Code uv tool"
-uninstall_free_claude_code
+step "Removing Chinna-Free-Claude uv tool"
+uninstall_chinna_free_claude
 
-step "Purging FCC config and data from ~/.fcc"
-purge_fcc_home
+step "Purging FCC config and data from ~/.cfc"
+purge_cfc_home
 
-printf '\nFree Claude Code has been removed.\n'
+printf '\nChinna-Free-Claude has been removed.\n'
 printf 'uv, Claude Code, Codex, and the uv-managed Python runtime were left installed.\n'

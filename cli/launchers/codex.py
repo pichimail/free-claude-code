@@ -1,4 +1,4 @@
-"""Installed `fcc-codex` launcher."""
+"""Installed `cfc-codex` launcher."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from .common import (
     run_client_process,
 )
 
-_CODEX_AUTH_ENV_KEY = "FCC_CODEX_API_KEY"
+_CODEX_AUTH_ENV_KEY = "CFC_CODEX_API_KEY"
 _DISPLAY_NAME = "Codex CLI"
 _DEFAULT_BINARY = "codex"
 _INSTALL_HINT = "Install Codex with: npm install -g @openai/codex"
@@ -44,10 +44,10 @@ def launch(argv: Sequence[str] | None = None) -> None:
     proxy_root_url = local_proxy_root_url(settings)
     if error := preflight_proxy(proxy_root_url):
         print(
-            f"Free Claude Code proxy is not reachable at {proxy_root_url}: {error}",
+            f"Chinna-Free-Claude proxy is not reachable at {proxy_root_url}: {error}",
             file=sys.stderr,
         )
-        print("Start it in another terminal with: fcc-server", file=sys.stderr)
+        print("Start it in another terminal with: cfc-server", file=sys.stderr)
         raise SystemExit(1)
 
     binary_name = codex_binary_name()
@@ -115,7 +115,7 @@ def build_codex_launcher_env(
         for key, value in base_env.items()
         if key not in _STRIPPED_CODEX_ENV_KEYS and not key.startswith("OPENAI_")
     }
-    env[_CODEX_AUTH_ENV_KEY] = auth_token.strip() or "fcc-no-auth"
+    env[_CODEX_AUTH_ENV_KEY] = auth_token.strip() or "cfc-no-auth"
     return env
 
 
@@ -132,7 +132,7 @@ def codex_model_catalog_config_args(
         models = catalog.get("models")
         if not isinstance(models, list) or not models:
             print(
-                "Free Claude Code warning: Codex model catalog is empty; "
+                "Chinna-Free-Claude warning: Codex model catalog is empty; "
                 "launching without model picker catalog.",
                 file=sys.stderr,
             )
@@ -141,7 +141,7 @@ def codex_model_catalog_config_args(
         write_codex_model_catalog(catalog_path, catalog)
     except Exception as exc:
         print(
-            "Free Claude Code warning: could not prepare Codex model catalog "
+            "Chinna-Free-Claude warning: could not prepare Codex model catalog "
             f"({exc}); launching without model picker catalog.",
             file=sys.stderr,
         )
@@ -180,15 +180,15 @@ def codex_config_args(*, api_url: str, model: str | None = None) -> list[str]:
 
     args = [
         "-c",
-        _toml_assignment("model_provider", "fcc"),
+        _toml_assignment("model_provider", "cfc"),
         "-c",
-        _toml_assignment("model_providers.fcc.name", "Free Claude Code"),
+        _toml_assignment("model_providers.cfc.name", "Chinna-Free-Claude"),
         "-c",
-        _toml_assignment("model_providers.fcc.base_url", _ensure_v1_url(api_url)),
+        _toml_assignment("model_providers.cfc.base_url", _ensure_v1_url(api_url)),
         "-c",
-        _toml_assignment("model_providers.fcc.env_key", _CODEX_AUTH_ENV_KEY),
+        _toml_assignment("model_providers.cfc.env_key", _CODEX_AUTH_ENV_KEY),
         "-c",
-        _toml_assignment("model_providers.fcc.wire_api", "responses"),
+        _toml_assignment("model_providers.cfc.wire_api", "responses"),
     ]
     if model:
         args.extend(["-c", _toml_assignment("model", model)])

@@ -21,7 +21,7 @@ function Show-Usage {
     @"
 Usage: install.ps1 [options]
 
-Installs Claude Code and Codex if missing, installs or updates uv, Python 3.14.0, and Free Claude Code.
+Installs Claude Code and Codex if missing, installs or updates uv, Python 3.14.0, and Chinna-Free-Claude.
 
 Options:
   -VoiceNim              Install NVIDIA NIM voice transcription support.
@@ -355,21 +355,21 @@ function Get-PackageSpec {
     }
 
     if ($includeNim -and $includeLocal) {
-        return "free-claude-code[voice,voice_local] @ $RepoGitUrl"
+        return "chinna-free-claude[voice,voice_local] @ $RepoGitUrl"
     }
 
     if ($includeNim) {
-        return "free-claude-code[voice] @ $RepoGitUrl"
+        return "chinna-free-claude[voice] @ $RepoGitUrl"
     }
 
     if ($includeLocal) {
-        return "free-claude-code[voice_local] @ $RepoGitUrl"
+        return "chinna-free-claude[voice_local] @ $RepoGitUrl"
     }
 
     return $RepoGitUrl
 }
 
-function Install-FreeClaudeCode {
+function Install-ChinnaFreeClaude {
     $packageSpec = Get-PackageSpec
     $toolArgs = @("tool", "install", "--force")
 
@@ -407,10 +407,10 @@ Install-OrUpdateUv
 Write-Step "Installing Python $PythonVersion"
 Invoke-InstallCommand -FilePath "uv" -Arguments @("python", "install", $PythonVersion)
 
-Write-Step "Installing or updating Free Claude Code"
-Install-FreeClaudeCode
+Write-Step "Installing or updating Chinna-Free-Claude"
+Install-ChinnaFreeClaude
 
 Write-Host ""
-Write-Host "Free Claude Code is installed. Start the proxy with: fcc-server"
-Write-Host "Run Claude Code with: fcc-claude"
-Write-Host "Run Codex with: fcc-codex"
+Write-Host "Chinna-Free-Claude is installed. Start the proxy with: cfc-server"
+Write-Host "Run Claude Code with: cfc-claude"
+Write-Host "Run Codex with: cfc-codex"

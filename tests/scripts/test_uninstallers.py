@@ -84,85 +84,85 @@ def _write_mock_uv(bin_dir: Path, *, message: str, exit_code: int) -> None:
     uv.chmod(uv.stat().st_mode | stat.S_IXUSR)
 
 
-def test_uninstall_sh_removes_uv_tool_and_purges_fcc_home() -> None:
+def test_uninstall_sh_removes_uv_tool_and_purges_cfc_home() -> None:
     text = _script_text("uninstall.sh")
-    tool_body = _braced_body(text, "uninstall_free_claude_code()")
-    purge_body = _braced_body(text, "purge_fcc_home()")
+    tool_body = _braced_body(text, "uninstall_chinna_free_claude()")
+    purge_body = _braced_body(text, "purge_cfc_home()")
 
     assert "Does not remove uv, Claude Code, Codex" in text
     assert "uv tool uninstall" in tool_body
-    assert 'PACKAGE_NAME="free-claude-code"' in text
+    assert 'PACKAGE_NAME="chinna-free-claude"' in text
     assert "uv not found on PATH; skipping uv tool uninstall." in tool_body
     assert "is_missing_uv_tool_error" in tool_body
-    assert "aborting before deleting ~/.fcc." in tool_body
+    assert "aborting before deleting ~/.cfc." in tool_body
     assert "rm -rf" in purge_body
-    assert ".fcc" in purge_body
+    assert ".cfc" in purge_body
     assert "npm uninstall" not in text
     assert "uv self uninstall" not in text
     assert "uv python uninstall" not in text
 
 
-def test_uninstall_sh_fails_when_fcc_commands_are_running() -> None:
+def test_uninstall_sh_fails_when_cfc_commands_are_running() -> None:
     text = _script_text("uninstall.sh")
-    guard_body = _braced_body(text, "assert_no_fcc_processes_running()")
+    guard_body = _braced_body(text, "assert_no_cfc_processes_running()")
     main = text[text.index('parse_args "$@"') :]
 
     for command in (
-        "fcc-server",
-        "fcc-claude",
-        "fcc-codex",
-        "fcc-init",
-        "free-claude-code",
+        "cfc-server",
+        "cfc-claude",
+        "cfc-codex",
+        "cfc-init",
+        "chinna-free-claude",
     ):
         assert command in text
 
-    assert "FCC_COMMANDS" in text
+    assert "CFC_COMMANDS" in text
 
-    assert "Free Claude Code is still running" in guard_body
+    assert "Chinna-Free-Claude is still running" in guard_body
     assert (
-        'step "Checking for running Free Claude Code processes"\nassert_no_fcc_processes_running'
+        'step "Checking for running Chinna-Free-Claude processes"\nassert_no_cfc_processes_running'
         in main
     )
 
 
-def test_uninstall_ps1_removes_uv_tool_and_purges_fcc_home() -> None:
+def test_uninstall_ps1_removes_uv_tool_and_purges_cfc_home() -> None:
     text = _script_text("uninstall.ps1")
-    tool_body = _braced_body(text, "function Uninstall-FreeClaudeCode")
-    purge_body = _braced_body(text, "function Purge-FccHome")
+    tool_body = _braced_body(text, "function Uninstall-ChinnaFreeClaude")
+    purge_body = _braced_body(text, "function Purge-CfcHome")
 
     assert "Does not remove uv, Claude Code, Codex" in text
     assert "uv tool uninstall" in tool_body
-    assert '$PackageName = "free-claude-code"' in text
+    assert '$PackageName = "chinna-free-claude"' in text
     assert "uv not found on PATH; skipping uv tool uninstall." in tool_body
     assert "Test-MissingUvToolError" in tool_body
-    assert "aborting before deleting ~/.fcc." in tool_body
+    assert "aborting before deleting ~/.cfc." in tool_body
     assert "Remove-Item" in purge_body
     assert purge_body.count("Remove-Item -LiteralPath") == 1
-    assert '$FccHomeDirname = ".fcc"' in text
+    assert '$CfcHomeDirname = ".cfc"' in text
     assert "npm uninstall" not in text
     assert "uv self uninstall" not in text
     assert "uv python uninstall" not in text
 
 
-def test_uninstall_ps1_fails_when_fcc_commands_are_running() -> None:
+def test_uninstall_ps1_fails_when_cfc_commands_are_running() -> None:
     text = _script_text("uninstall.ps1")
-    guard_body = _braced_body(text, "function Assert-NoFccProcessesRunning")
+    guard_body = _braced_body(text, "function Assert-NoCfcProcessesRunning")
 
     for command in (
-        "fcc-server",
-        "fcc-claude",
-        "fcc-codex",
-        "fcc-init",
-        "free-claude-code",
+        "cfc-server",
+        "cfc-claude",
+        "cfc-codex",
+        "cfc-init",
+        "chinna-free-claude",
     ):
         assert command in text
 
-    assert "FccCommands" in text
+    assert "CfcCommands" in text
 
-    assert "Free Claude Code is still running" in guard_body
+    assert "Chinna-Free-Claude is still running" in guard_body
     assert (
-        'Write-Step "Checking for running Free Claude Code processes"\n'
-        "Assert-NoFccProcessesRunning" in text
+        'Write-Step "Checking for running Chinna-Free-Claude processes"\n'
+        "Assert-NoCfcProcessesRunning" in text
     )
 
 
@@ -188,7 +188,7 @@ def test_uninstall_ps1_missing_tool_detection_is_narrow() -> None:
     assert "locked" not in detector_body
 
 
-def test_uninstall_sh_generic_uv_failure_does_not_delete_fcc_home(
+def test_uninstall_sh_generic_uv_failure_does_not_delete_cfc_home(
     tmp_path: Path,
 ) -> None:
     sh = shutil.which("sh")
@@ -196,9 +196,9 @@ def test_uninstall_sh_generic_uv_failure_does_not_delete_fcc_home(
         pytest.skip("sh is not available on this platform")
 
     home = tmp_path / "home"
-    fcc_home = home / ".fcc"
+    cfc_home = home / ".cfc"
     bin_dir = home / ".local" / "bin"
-    fcc_home.mkdir(parents=True)
+    cfc_home.mkdir(parents=True)
     bin_dir.mkdir(parents=True)
     uv = bin_dir / "uv"
     uv.write_text(
@@ -219,25 +219,25 @@ def test_uninstall_sh_generic_uv_failure_does_not_delete_fcc_home(
     )
 
     assert result.returncode != 0
-    assert fcc_home.exists()
+    assert cfc_home.exists()
     assert "failed with exit code 42" in result.stderr
-    assert "before deleting ~/.fcc" in result.stderr
+    assert "before deleting ~/.cfc" in result.stderr
 
 
-def test_uninstall_sh_missing_tool_still_deletes_fcc_home(tmp_path: Path) -> None:
+def test_uninstall_sh_missing_tool_still_deletes_cfc_home(tmp_path: Path) -> None:
     sh = shutil.which("sh")
     if sh is None:
         pytest.skip("sh is not available on this platform")
 
     home = tmp_path / "home"
-    fcc_home = home / ".fcc"
+    cfc_home = home / ".cfc"
     bin_dir = home / ".local" / "bin"
-    fcc_home.mkdir(parents=True)
+    cfc_home.mkdir(parents=True)
     bin_dir.mkdir(parents=True)
     uv = bin_dir / "uv"
     uv.write_text(
         "#!/bin/sh\n"
-        "printf '%s\\n' 'tool free-claude-code is not installed' >&2\n"
+        "printf '%s\\n' 'tool chinna-free-claude is not installed' >&2\n"
         "exit 2\n",
         encoding="utf-8",
     )
@@ -253,18 +253,18 @@ def test_uninstall_sh_missing_tool_still_deletes_fcc_home(tmp_path: Path) -> Non
     )
 
     assert result.returncode == 0
-    assert not fcc_home.exists()
+    assert not cfc_home.exists()
 
 
-def test_uninstall_sh_missing_uv_still_deletes_fcc_home(tmp_path: Path) -> None:
+def test_uninstall_sh_missing_uv_still_deletes_cfc_home(tmp_path: Path) -> None:
     sh = shutil.which("sh")
     if sh is None:
         pytest.skip("sh is not available on this platform")
 
     home = tmp_path / "home"
-    fcc_home = home / ".fcc"
+    cfc_home = home / ".cfc"
     empty_bin = tmp_path / "empty-bin"
-    fcc_home.mkdir(parents=True)
+    cfc_home.mkdir(parents=True)
     empty_bin.mkdir()
 
     result = subprocess.run(
@@ -281,11 +281,11 @@ def test_uninstall_sh_missing_uv_still_deletes_fcc_home(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 0
-    assert not fcc_home.exists()
+    assert not cfc_home.exists()
     assert "uv not found on PATH; skipping uv tool uninstall." in result.stdout
 
 
-def test_uninstall_ps1_generic_uv_failure_does_not_delete_fcc_home(
+def test_uninstall_ps1_generic_uv_failure_does_not_delete_cfc_home(
     tmp_path: Path,
 ) -> None:
     pwsh = shutil.which("pwsh") or shutil.which("powershell")
@@ -293,9 +293,9 @@ def test_uninstall_ps1_generic_uv_failure_does_not_delete_fcc_home(
         pytest.skip("PowerShell is not available on this platform")
 
     home = tmp_path / "home"
-    fcc_home = home / ".fcc"
+    cfc_home = home / ".cfc"
     bin_dir = home / ".local" / "bin"
-    fcc_home.mkdir(parents=True)
+    cfc_home.mkdir(parents=True)
     bin_dir.mkdir(parents=True)
     _write_mock_uv(
         bin_dir,
@@ -318,24 +318,24 @@ def test_uninstall_ps1_generic_uv_failure_does_not_delete_fcc_home(
     )
 
     assert result.returncode != 0
-    assert fcc_home.exists()
+    assert cfc_home.exists()
     assert "failed with exit code 42" in result.stderr
-    assert "before deleting ~/.fcc" in result.stderr
+    assert "before deleting ~/.cfc" in result.stderr
 
 
-def test_uninstall_ps1_missing_tool_still_deletes_fcc_home(tmp_path: Path) -> None:
+def test_uninstall_ps1_missing_tool_still_deletes_cfc_home(tmp_path: Path) -> None:
     pwsh = shutil.which("pwsh") or shutil.which("powershell")
     if pwsh is None:
         pytest.skip("PowerShell is not available on this platform")
 
     home = tmp_path / "home"
-    fcc_home = home / ".fcc"
+    cfc_home = home / ".cfc"
     bin_dir = home / ".local" / "bin"
-    fcc_home.mkdir(parents=True)
+    cfc_home.mkdir(parents=True)
     bin_dir.mkdir(parents=True)
     _write_mock_uv(
         bin_dir,
-        message="tool free-claude-code is not installed",
+        message="tool chinna-free-claude is not installed",
         exit_code=2,
     )
 
@@ -354,18 +354,18 @@ def test_uninstall_ps1_missing_tool_still_deletes_fcc_home(tmp_path: Path) -> No
     )
 
     assert result.returncode == 0
-    assert not fcc_home.exists()
+    assert not cfc_home.exists()
 
 
-def test_uninstall_ps1_missing_uv_still_deletes_fcc_home(tmp_path: Path) -> None:
+def test_uninstall_ps1_missing_uv_still_deletes_cfc_home(tmp_path: Path) -> None:
     pwsh = shutil.which("pwsh") or shutil.which("powershell")
     if pwsh is None:
         pytest.skip("PowerShell is not available on this platform")
 
     home = tmp_path / "home"
-    fcc_home = home / ".fcc"
+    cfc_home = home / ".cfc"
     empty_bin = tmp_path / "empty-bin"
-    fcc_home.mkdir(parents=True)
+    cfc_home.mkdir(parents=True)
     empty_bin.mkdir()
 
     result = subprocess.run(
@@ -383,5 +383,5 @@ def test_uninstall_ps1_missing_uv_still_deletes_fcc_home(tmp_path: Path) -> None
     )
 
     assert result.returncode == 0
-    assert not fcc_home.exists()
+    assert not cfc_home.exists()
     assert "uv not found on PATH; skipping uv tool uninstall." in result.stdout

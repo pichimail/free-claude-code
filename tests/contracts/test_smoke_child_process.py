@@ -28,14 +28,14 @@ def test_run_captured_text_uses_utf8_replacement(monkeypatch, tmp_path: Path) ->
     result = run_captured_text(
         ("cmd", "arg"),
         cwd=tmp_path,
-        env={"FCC_TEST": "1"},
+        env={"CFC_TEST": "1"},
         timeout=1.0,
     )
 
     assert result.stdout == "ok"
     assert calls["command"] == ["cmd", "arg"]
     assert calls["cwd"] == tmp_path
-    assert calls["env"] == {"FCC_TEST": "1"}
+    assert calls["env"] == {"CFC_TEST": "1"}
     assert calls["capture_output"] is True
     assert calls["text"] is True
     assert calls["encoding"] == "utf-8"

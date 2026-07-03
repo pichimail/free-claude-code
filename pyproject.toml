@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "chinna-free-claude"
-version = "2.4.1"
+version = "3.0.0"
 description = "Chinna Free Claude - Middleware between Claude Code CLI (Anthropic API) and NVIDIA NIM"
 readme = "README.md"
 requires-python = ">=3.14.0"
@@ -26,11 +26,10 @@ dependencies = [
 ]
 
 [project.scripts]
-fcc-server = "cli.entrypoints:serve"
-free-claude-code = "cli.entrypoints:serve"
-fcc-init = "cli.entrypoints:init"
-fcc-claude = "cli.launchers.claude:launch"
-fcc-codex = "cli.launchers.codex:launch"
+cfc-server = "cli.entrypoints:serve"
+cfc-init = "cli.entrypoints:init"
+cfc-claude = "cli.launchers.claude:launch"
+cfc-codex = "cli.launchers.codex:launch"
 
 [project.optional-dependencies]
 voice = [
@@ -117,7 +116,7 @@ markers = [
     "clients: client compatibility checks",
     "voice: voice transcription checks",
     "contract: deterministic feature contract checks",
-    "smoke_target(name): route a smoke test behind FCC_SMOKE_TARGETS",
+    "smoke_target(name): route a smoke test behind CFC_SMOKE_TARGETS",
     "xdist_group(name): group smoke provider items under pytest-xdist --dist=loadgroup",
 ]
 

@@ -1,4 +1,4 @@
-"""Installed `fcc-claude` launcher."""
+"""Installed `cfc-claude` launcher."""
 
 from __future__ import annotations
 
@@ -27,10 +27,10 @@ def launch(argv: Sequence[str] | None = None) -> None:
     proxy_root_url = local_proxy_root_url(settings)
     if error := preflight_proxy(proxy_root_url):
         print(
-            f"Free Claude Code proxy is not reachable at {proxy_root_url}: {error}",
+            f"Chinna-Free-Claude proxy is not reachable at {proxy_root_url}: {error}",
             file=sys.stderr,
         )
-        print("Start it in another terminal with: fcc-server", file=sys.stderr)
+        print("Start it in another terminal with: cfc-server", file=sys.stderr)
         raise SystemExit(1)
 
     binary_name = claude_binary_name()

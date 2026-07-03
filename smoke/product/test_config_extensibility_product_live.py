@@ -9,7 +9,7 @@ from config.settings import Settings
 from messaging.platforms.factory import create_messaging_components
 from providers.runtime import build_provider_config
 from smoke.lib.child_process import (
-    cmd_free_claude_code_serve,
+    cmd_cfc_serve,
     cmd_python_c,
     run_captured_text,
 )
@@ -27,7 +27,7 @@ def test_env_precedence_e2e(smoke_config: SmokeConfig, tmp_path) -> None:
         encoding="utf-8",
     )
     env = os.environ.copy()
-    env["FCC_ENV_FILE"] = str(env_file)
+    env["CFC_ENV_FILE"] = str(env_file)
     env["MODEL"] = "nvidia_nim/process-model"
     env["ANTHROPIC_AUTH_TOKEN"] = "process-token"
     script = (
@@ -52,7 +52,7 @@ def test_removed_env_migration_e2e(smoke_config: SmokeConfig, tmp_path) -> None:
     env_file = tmp_path / "removed.env"
     env_file.write_text('NIM_ENABLE_THINKING="true"\n', encoding="utf-8")
     env = os.environ.copy()
-    env["FCC_ENV_FILE"] = str(env_file)
+    env["CFC_ENV_FILE"] = str(env_file)
     result = run_captured_text(
         cmd_python_c("from config.settings import Settings; Settings()"),
         cwd=smoke_config.root,
@@ -74,7 +74,7 @@ def test_per_model_thinking_config_e2e(smoke_config: SmokeConfig, tmp_path) -> N
         encoding="utf-8",
     )
     env = os.environ.copy()
-    env["FCC_ENV_FILE"] = str(env_file)
+    env["CFC_ENV_FILE"] = str(env_file)
     script = (
         "from api.model_router import ModelRouter; "
         "from config.settings import Settings; "
@@ -109,7 +109,7 @@ def test_proxy_timeout_config_e2e(smoke_config: SmokeConfig, tmp_path) -> None:
         encoding="utf-8",
     )
     env = os.environ.copy()
-    env["FCC_ENV_FILE"] = str(env_file)
+    env["CFC_ENV_FILE"] = str(env_file)
     script = (
         "from config.settings import Settings; "
         "from config.provider_catalog import PROVIDER_CATALOG; "
@@ -170,7 +170,7 @@ def test_entrypoint_server_e2e(smoke_config: SmokeConfig) -> None:
     with SmokeServerDriver(
         smoke_config,
         name="product-entrypoint",
-        command=cmd_free_claude_code_serve(),
+        command=cmd_cfc_serve(),
         env_overrides={"MESSAGING_PLATFORM": "none"},
     ).run() as server:
         assert server.process.poll() is None

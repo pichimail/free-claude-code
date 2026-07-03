@@ -254,7 +254,7 @@ CAPABILITY_CONTRACTS: tuple[CapabilityContract, ...] = (
         "env_precedence",
         "config_env_precedence",
         "config.settings.Settings",
-        "process env, user env file, repo env file, FCC_ENV_FILE",
+        "process env, user env file, repo env file, CFC_ENV_FILE",
         "deterministic settings values",
         "validation error for invalid settings",
         ("tests/config/test_config.py",),
@@ -417,7 +417,7 @@ CAPABILITY_CONTRACTS: tuple[CapabilityContract, ...] = (
         "process cleanup in finally",
         ("tests/cli/test_entrypoints.py",),
         (
-            "test_fcc_init_scaffolds_user_config",
+            "test_cfc_init_scaffolds_user_config",
             "test_free_claude_code_entrypoint_starts_server",
         ),
     ),
@@ -441,7 +441,7 @@ CAPABILITY_CONTRACTS: tuple[CapabilityContract, ...] = (
         "codex_cli_drop_in",
         "drop_in_codex_replacement",
         "cli.launchers.codex",
-        "Codex CLI binary and fcc provider env",
+        "Codex CLI binary and cfc provider env",
         "Responses config, auth env, and native /model catalog injection",
         "proxy preflight and catalog fail-open warning",
         (

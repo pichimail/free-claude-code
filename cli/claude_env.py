@@ -4,7 +4,7 @@ from __future__ import annotations
 
 CLAUDE_CODE_AUTO_COMPACT_WINDOW = "190000"
 CLAUDE_BINARY_NAME = "claude"
-CLAUDE_NO_AUTH_SENTINEL = "fcc-no-auth"
+CLAUDE_NO_AUTH_SENTINEL = "cfc-no-auth"
 
 
 def claude_auth_token(auth_token: str) -> str:

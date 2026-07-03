@@ -95,7 +95,7 @@ def test_managed_claude_env_uses_sentinel_when_proxy_auth_blank() -> None:
         base_env={"ANTHROPIC_AUTH_TOKEN": "stale"},
     )
 
-    assert env["ANTHROPIC_AUTH_TOKEN"] == "fcc-no-auth"
+    assert env["ANTHROPIC_AUTH_TOKEN"] == "cfc-no-auth"
 
 
 def test_managed_claude_extracts_session_ids() -> None:

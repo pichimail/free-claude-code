@@ -573,14 +573,14 @@ def test_cli_surfaces_are_explicit_launchers_and_managed_claude() -> None:
 
     claude_env_text = (cli_root / "claude_env.py").read_text(encoding="utf-8")
     assert 'CLAUDE_CODE_AUTO_COMPACT_WINDOW = "190000"' in claude_env_text
-    assert 'CLAUDE_NO_AUTH_SENTINEL = "fcc-no-auth"' in claude_env_text
+    assert 'CLAUDE_NO_AUTH_SENTINEL = "cfc-no-auth"' in claude_env_text
     for path in {
         cli_root / "launchers" / "claude.py",
         cli_root / "managed" / "claude.py",
     }:
         text = path.read_text(encoding="utf-8")
         assert '"190000"' not in text
-        assert '"fcc-no-auth"' not in text
+        assert '"cfc-no-auth"' not in text
 
     messaging_protocols_text = (
         repo_root / "messaging" / "managed_protocols.py"
@@ -601,8 +601,8 @@ def test_cli_surfaces_are_explicit_launchers_and_managed_claude() -> None:
         assert "SessionManagerInterface" not in text
 
     pyproject_text = (repo_root / "pyproject.toml").read_text(encoding="utf-8")
-    assert 'fcc-claude = "cli.launchers.claude:launch"' in pyproject_text
-    assert 'fcc-codex = "cli.launchers.codex:launch"' in pyproject_text
+    assert 'cfc-claude = "cli.launchers.claude:launch"' in pyproject_text
+    assert 'cfc-codex = "cli.launchers.codex:launch"' in pyproject_text
 
 
 def _imports_matching(

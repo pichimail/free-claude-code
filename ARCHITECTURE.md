@@ -10,7 +10,7 @@ and how contributors should extend it.
 
 ## System Overview
 
-Free Claude Code is a local proxy for agent clients. It accepts Anthropic
+Chinna-Free-Claude is a local proxy for agent clients. It accepts Anthropic
 Messages traffic from Claude Code clients and OpenAI Responses traffic from Codex
 clients, routes the request to a configured upstream provider, and preserves the
 wire protocol expected by the caller.
@@ -71,17 +71,17 @@ than importing behavior from another provider-specific module.
 
 ## Customer-Facing Contract
 
-FCC optimizes for installed user workflows, not internal compatibility. The
+CFC optimizes for installed user workflows, not internal compatibility. The
 behavior that must be preserved is that these user-facing surfaces run correctly
 for real prompts against supported providers:
 
-- `fcc-server` and the local Admin UI for configuring supported providers,
+- `cfc-server` and the local Admin UI for configuring supported providers,
   model routing, auth, server tools, messaging, and diagnostics.
-- `fcc-claude`, Claude Code, and the Anthropic-compatible proxy behavior Claude
+- `cfc-claude`, Claude Code, and the Anthropic-compatible proxy behavior Claude
   Code relies on, including streaming text, native/interleaved thinking, tool
   use/results, model discovery, token counting, retries/recovery, and supported
   local server-tool behavior.
-- `fcc-codex`, Codex CLI/extensions, and the streaming OpenAI Responses behavior
+- `cfc-codex`, Codex CLI/extensions, and the streaming OpenAI Responses behavior
   Codex relies on, including native/interleaved reasoning, function and custom
   tool calls, generated `/model` catalog support, Responses stream lifecycle
   events, and Responses-to-Anthropic conversion at the adapter boundary.
@@ -129,15 +129,15 @@ new places to add unrelated behavior:
 
 Console scripts are registered in [pyproject.toml](pyproject.toml):
 
-- `fcc-server` and `free-claude-code` call `cli.entrypoints:serve`.
-- `fcc-init` calls `cli.entrypoints:init`.
-- `fcc-claude` calls `cli.launchers.claude:launch`.
-- `fcc-codex` calls `cli.launchers.codex:launch`.
+- `cfc-server` calls `cli.entrypoints:serve`.
+- `cfc-init` calls `cli.entrypoints:init`.
+- `cfc-claude` calls `cli.launchers.claude:launch`.
+- `cfc-codex` calls `cli.launchers.codex:launch`.
 
 [scripts/install.sh](scripts/install.sh) and [scripts/install.ps1](scripts/install.ps1)
 install or update the uv tool plus optional voice extras. [scripts/uninstall.sh](scripts/uninstall.sh)
-and [scripts/uninstall.ps1](scripts/uninstall.ps1) remove only the FCC uv tool and always
-delete the managed `~/.fcc/` tree from [config/paths.py](config/paths.py); they do not remove
+and [scripts/uninstall.ps1](scripts/uninstall.ps1) remove only the CFC uv tool and always
+delete the managed `~/.cfc/` tree from [config/paths.py](config/paths.py); they do not remove
 uv, Claude Code, Codex, or uv-managed Python runtimes. [scripts/ci.sh](scripts/ci.sh) and
 [scripts/ci.ps1](scripts/ci.ps1) mirror [.github/workflows/tests.yml](.github/workflows/tests.yml)
 for local pre-push verification.
@@ -172,8 +172,8 @@ model-ref parsing, launcher defaults, or web-tool policy. Dotenv discovery lives
 in [config/env_files.py](config/env_files.py) and uses this order:
 
 1. repo-local `.env`;
-2. managed `~/.fcc/.env`;
-3. optional `FCC_ENV_FILE`, appended when present.
+2. managed `~/.cfc/.env`;
+3. optional `CFC_ENV_FILE`, appended when present.
 
 Later dotenv files override earlier dotenv files. Process environment variables
 also participate through Pydantic settings resolution. `ANTHROPIC_AUTH_TOKEN`
@@ -183,11 +183,11 @@ source detection for startup warnings also belongs to `config/env_files.py`.
 
 [config/paths.py](config/paths.py) defines managed paths:
 
-- config directory: `~/.fcc`;
-- managed env file: `~/.fcc/.env`;
-- generated Codex model catalog: `~/.fcc/codex-model-catalog.json`;
-- agent workspace: `~/.fcc/agent_workspace`;
-- server log: `~/.fcc/logs/server.log`.
+- config directory: `~/.cfc`;
+- managed env file: `~/.cfc/.env`;
+- generated Codex model catalog: `~/.cfc/codex-model-catalog.json`;
+- agent workspace: `~/.cfc/agent_workspace`;
+- server log: `~/.cfc/logs/server.log`.
 
 Model routing configuration is tiered:
 
@@ -212,7 +212,7 @@ settings are cache-cleared. Depending on the changed fields, the server either
 replaces the app provider runtime or asks the supervised server to restart.
 
 [.env.example](.env.example) is the single install/init/admin template source.
-It is packaged as a [config/](config/) resource for `fcc-init` and Admin UI
+It is packaged as a [config/](config/) resource for `cfc-init` and Admin UI
 template defaults; runtime settings do not read it as a live config file.
 
 Admin routes call `require_loopback_admin()`, which rejects non-loopback clients
@@ -305,11 +305,11 @@ Provider model discovery is app-scoped through `ProviderRuntime`, which caches
 model IDs and optional thinking capability metadata for the model-list route and
 admin status.
 
-Codex-specific model picker shaping stays out of this route. `fcc-codex` fetches
-the same `/v1/models` response at launch, converts FCC gateway IDs into
-provider-selectable Codex slugs, writes `~/.fcc/codex-model-catalog.json`, and
+Codex-specific model picker shaping stays out of this route. `cfc-codex` fetches
+the same `/v1/models` response at launch, converts CFC gateway IDs into
+provider-selectable Codex slugs, writes `~/.cfc/codex-model-catalog.json`, and
 passes it as `model_catalog_json`. Codex users open the native picker with
-`/model`; FCC does not implement a proxy-level `/models` alias.
+`/model`; CFC does not implement a proxy-level `/models` alias.
 
 ## Provider Architecture
 
@@ -411,14 +411,14 @@ construction, rate limiting, and model listing.
 [core/openai_responses/](core/openai_responses/) owns OpenAI Responses support:
 
 - the `OpenAIResponsesAdapter` facade used by the API layer;
-- streaming-only `/v1/responses` support for Codex/FCC workflows;
+- streaming-only `/v1/responses` support for Codex/CFC workflows;
 - Responses request conversion into Anthropic Messages payloads;
 - Anthropic SSE conversion into Responses SSE;
 - OpenAI-compatible error envelopes.
 
 The package intentionally does not implement the full OpenAI Responses surface.
-FCC accepts omitted `stream` or `stream: true`; `stream: false` is rejected with
-an OpenAI-shaped client error because installed FCC/Codex workflows only need
+CFC accepts omitted `stream` or `stream: true`; `stream: false` is rejected with
+an OpenAI-shaped client error because installed CFC/Codex workflows only need
 streaming. Request conversion, stream transformation, Anthropic SSE parsing,
 Responses SSE event formatting, output item construction, tool identity mapping,
 reasoning mapping, ID generation, and error envelope construction each live
@@ -436,7 +436,7 @@ Responses `custom` tool declarations, represents them internally as Anthropic
 tools with a single string `input` field, and restores `custom_tool_call`,
 `custom_tool_call_output`, and `response.custom_tool_call_input.*` shapes at the
 Responses edge. Text or grammar format metadata is preserved as model guidance;
-FCC does not validate custom-tool grammars.
+CFC does not validate custom-tool grammars.
 
 Responses reasoning is handled as protocol conversion, not provider policy.
 `reasoning.effort = "none"` converts to a disabled Anthropic `thinking`
@@ -450,7 +450,7 @@ Provider thinking output maps back to Responses reasoning in the same block
 order the upstream Anthropic stream produced. Anthropic `thinking` blocks become
 Responses `reasoning` output items and `response.reasoning_text.*` stream
 events. Anthropic `redacted_thinking` becomes a Responses `reasoning` item with
-`encrypted_content`; the opaque value is not exposed as visible text and FCC
+`encrypted_content`; the opaque value is not exposed as visible text and CFC
 does not synthesize reasoning summaries.
 
 Provider code should delegate protocol details to these modules. Avoid copying
@@ -495,25 +495,25 @@ and native Anthropic Messages transports may receive them.
 ## CLI Launchers And Managed Claude
 
 [cli/launchers/claude.py](cli/launchers/claude.py) owns the installed
-`fcc-claude` launcher:
+`cfc-claude` launcher:
 
-- `fcc-claude` strips inherited `ANTHROPIC_*` variables, sets
+- `cfc-claude` strips inherited `ANTHROPIC_*` variables, sets
   `ANTHROPIC_BASE_URL`, enables gateway model discovery, configures the
   auto-compact window, and always sets `ANTHROPIC_AUTH_TOKEN`. Blank proxy auth
-  becomes the local-only `fcc-no-auth` sentinel so Claude Code reaches the proxy
+  becomes the local-only `cfc-no-auth` sentinel so Claude Code reaches the proxy
   instead of stopping at its login gate.
 
 [cli/launchers/codex.py](cli/launchers/codex.py) owns the installed
-`fcc-codex` launcher:
+`cfc-codex` launcher:
 
-- `fcc-codex` strips official OpenAI and Codex credential variables.
-- It creates an ephemeral `fcc` model provider with `wire_api = "responses"` and
+- `cfc-codex` strips official OpenAI and Codex credential variables.
+- It creates an ephemeral `cfc` model provider with `wire_api = "responses"` and
   a base URL pointing at the local proxy `/v1` path.
 - After proxy health succeeds, it fetches `/v1/models`, writes a generated Codex
-  `model_catalog_json` file under `~/.fcc/`, and injects that path so Codex's
-  native `/model` picker lists FCC provider slugs. Catalog generation is
+  `model_catalog_json` file under `~/.cfc/`, and injects that path so Codex's
+  native `/model` picker lists CFC provider slugs. Catalog generation is
   fail-open: launch continues with a warning if the catalog cannot be prepared.
-- It stores the proxy auth token in `FCC_CODEX_API_KEY` for Codex to read.
+- It stores the proxy auth token in `CFC_CODEX_API_KEY` for Codex to read.
 
 [cli/managed/](cli/managed/) owns managed Claude Code subprocesses used by
 Discord and Telegram messaging. Managed task invocations set
@@ -523,7 +523,7 @@ non-interactive terminal settings, optional `--resume`, optional
 extracts persistent Claude session IDs and yields Claude stream-json events to
 the messaging event parser.
 
-Codex is supported through `fcc-codex` and Codex extensions. FCC does not keep an
+Codex is supported through `cfc-codex` and Codex extensions. CFC does not keep an
 internal managed-Codex session runner because no user-facing messaging setting
 selects Codex for Discord or Telegram.
 
@@ -761,4 +761,3 @@ Update this file when a change adds or meaningfully changes:
 Docs-only changes to this file do not require a semver bump. Production code
 changes still follow the versioning rules in [AGENTS.md](AGENTS.md) and
 [CLAUDE.md](CLAUDE.md).
-

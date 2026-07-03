@@ -53,7 +53,7 @@ class TestSettings:
         assert settings.debug_platform_edits is False
         assert settings.debug_subagent_stack is False
 
-    def test_default_claude_workspace_uses_fcc_home(self, monkeypatch, tmp_path):
+    def test_default_claude_workspace_uses_cfc_home(self, monkeypatch, tmp_path):
         """Unset CLAUDE_WORKSPACE stores agent data under the fixed path helper."""
         from config.settings import Settings
 
@@ -64,17 +64,17 @@ class TestSettings:
 
         settings = Settings()
 
-        assert default_claude_workspace_path() == tmp_path / ".fcc" / "agent_workspace"
+        assert default_claude_workspace_path() == tmp_path / ".cfc" / "agent_workspace"
         assert not hasattr(settings, "claude_workspace")
 
-    def test_server_log_path_uses_fcc_home(self, monkeypatch, tmp_path):
-        """The server log location is fixed under ~/.fcc."""
+    def test_server_log_path_uses_cfc_home(self, monkeypatch, tmp_path):
+        """The server log location is fixed under ~/.cfc."""
         from config.paths import server_log_path
 
         monkeypatch.setenv("HOME", str(tmp_path))
         monkeypatch.setenv("USERPROFILE", str(tmp_path))
 
-        assert server_log_path() == tmp_path / ".fcc" / "logs" / "server.log"
+        assert server_log_path() == tmp_path / ".cfc" / "logs" / "server.log"
 
     def test_removed_log_file_env_is_ignored(self, monkeypatch):
         """Legacy LOG_FILE values do not affect Settings or block startup."""
@@ -98,7 +98,7 @@ class TestSettings:
 
         assert not hasattr(settings, "zai_base_url")
 
-    def test_blank_claude_workspace_uses_fcc_home(self, monkeypatch, tmp_path):
+    def test_blank_claude_workspace_uses_cfc_home(self, monkeypatch, tmp_path):
         """An explicit blank env value does not affect the fixed workspace helper."""
         from config.settings import Settings
 
@@ -109,7 +109,7 @@ class TestSettings:
 
         settings = Settings()
 
-        assert default_claude_workspace_path() == tmp_path / ".fcc" / "agent_workspace"
+        assert default_claude_workspace_path() == tmp_path / ".cfc" / "agent_workspace"
         assert not hasattr(settings, "claude_workspace")
 
     def test_explicit_claude_workspace_is_ignored(self, monkeypatch, tmp_path):
@@ -124,7 +124,7 @@ class TestSettings:
 
         settings = Settings()
 
-        assert default_claude_workspace_path() == tmp_path / ".fcc" / "agent_workspace"
+        assert default_claude_workspace_path() == tmp_path / ".cfc" / "agent_workspace"
         assert not hasattr(settings, "claude_workspace")
 
     def test_explicit_claude_cli_bin_is_ignored(self, monkeypatch):
@@ -157,7 +157,7 @@ class TestSettings:
             )
         )
 
-        assert default_claude_workspace_path() == tmp_path / ".fcc" / "agent_workspace"
+        assert default_claude_workspace_path() == tmp_path / ".cfc" / "agent_workspace"
         assert not hasattr(settings, "claude_workspace")
         assert not hasattr(settings, "claude_cli_bin")
 
@@ -912,7 +912,7 @@ class TestPerModelMapping:
         """Startup validation model collection is limited to configured chat refs."""
         from config.settings import Settings
 
-        monkeypatch.setenv("FCC_SMOKE_MODEL_NVIDIA_NIM", "nvidia_nim/smoke")
+        monkeypatch.setenv("CFC_SMOKE_MODEL_NVIDIA_NIM", "nvidia_nim/smoke")
         monkeypatch.setenv("WHISPER_MODEL", "openai/whisper-large-v3")
         s = Settings()
         s.model = "nvidia_nim/fallback"

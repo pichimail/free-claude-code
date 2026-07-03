@@ -9,7 +9,7 @@ import pytest
 
 from cli.managed.manager import ManagedClaudeSessionManager
 from cli.managed.session import ManagedClaudeSession
-from smoke.lib.child_process import cmd_fcc_init, run_captured_text
+from smoke.lib.child_process import cmd_cfc_init, run_captured_text
 from smoke.lib.config import SmokeConfig
 
 pytestmark = [pytest.mark.live, pytest.mark.smoke_target("cli")]
@@ -20,14 +20,14 @@ def test_entrypoint_init_e2e(smoke_config: SmokeConfig, tmp_path: Path) -> None:
     env["HOME"] = str(tmp_path)
     env["USERPROFILE"] = str(tmp_path)
     result = run_captured_text(
-        cmd_fcc_init(),
+        cmd_cfc_init(),
         cwd=smoke_config.root,
         env=env,
         timeout=smoke_config.timeout_s,
         check=False,
     )
     assert result.returncode == 0, result.stderr or result.stdout
-    env_file = tmp_path / ".fcc" / ".env"
+    env_file = tmp_path / ".cfc" / ".env"
     assert env_file.is_file()
     assert env_file.read_text(encoding="utf-8").strip()
 

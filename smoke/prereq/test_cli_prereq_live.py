@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 
 from smoke.lib.child_process import (
-    cmd_fcc_init,
-    cmd_free_claude_code_serve,
+    cmd_cfc_init,
+    cmd_cfc_serve,
     run_captured_text,
 )
 from smoke.lib.config import SmokeConfig
@@ -18,27 +18,27 @@ from smoke.lib.skips import skip_upstream_unavailable
 pytestmark = [pytest.mark.live, pytest.mark.smoke_target("cli")]
 
 
-def test_fcc_init_scaffolds_user_config(
+def test_cfc_init_scaffolds_user_config(
     smoke_config: SmokeConfig, tmp_path: Path
 ) -> None:
     env = os.environ.copy()
     env["HOME"] = str(tmp_path)
     env["USERPROFILE"] = str(tmp_path)
     result = run_captured_text(
-        cmd_fcc_init(),
+        cmd_cfc_init(),
         cwd=smoke_config.root,
         env=env,
         timeout=smoke_config.timeout_s,
         check=False,
     )
     assert result.returncode == 0, result.stderr or result.stdout
-    assert (tmp_path / ".fcc" / ".env").is_file()
+    assert (tmp_path / ".cfc" / ".env").is_file()
 
 
 def test_free_claude_code_entrypoint_starts_server(smoke_config: SmokeConfig) -> None:
     with start_server(
         smoke_config,
-        command=cmd_free_claude_code_serve(),
+        command=cmd_cfc_serve(),
         env_overrides={"MESSAGING_PLATFORM": "none"},
         name="entrypoint",
     ) as server:
@@ -65,7 +65,7 @@ def test_claude_cli_prompt_when_available(
         if smoke_config.settings.anthropic_auth_token:
             env["ANTHROPIC_AUTH_TOKEN"] = smoke_config.settings.anthropic_auth_token
         result = run_captured_text(
-            [claude_bin, "-p", "Reply with exactly FCC_SMOKE_PONG"],
+            [claude_bin, "-p", "Reply with exactly CFC_SMOKE_PONG"],
             cwd=tmp_path,
             env=env,
             timeout=smoke_config.timeout_s,
@@ -76,7 +76,7 @@ def test_claude_cli_prompt_when_available(
     assert "POST /v1/messages" in server_log, (
         "Claude CLI did not call the local Anthropic-compatible endpoint"
     )
-    if "FCC_SMOKE_PONG" not in result.stdout:
+    if "CFC_SMOKE_PONG" not in result.stdout:
         skip_upstream_unavailable(
             "Claude CLI reached the local proxy but returned no smoke token"
         )

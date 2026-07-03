@@ -29,7 +29,7 @@ SERVER_GRACEFUL_SHUTDOWN_SECONDS = 5
 
 
 def serve() -> None:
-    """Start the FastAPI server (registered as `fcc-server` script)."""
+    """Start the FastAPI server (registered as `cfc-server` script)."""
     opened_admin_browser = False
     try:
         try:
@@ -49,9 +49,9 @@ def serve() -> None:
 
 
 def _admin_browser_open_enabled() -> bool:
-    """Whether to open /admin when the server becomes reachable (FCC_OPEN_BROWSER)."""
+    """Whether to open /admin when the server becomes reachable (CFC_OPEN_BROWSER)."""
 
-    raw = os.environ.get("FCC_OPEN_BROWSER", "true").strip().lower()
+    raw = os.environ.get("CFC_OPEN_BROWSER", "true").strip().lower()
     return raw not in {"", "0", "false", "no"}
 
 
@@ -73,7 +73,7 @@ def _schedule_open_admin_browser(settings: Settings) -> None:
             time.sleep(0.15)
 
     threading.Thread(
-        target=open_when_ready, name="fcc-open-admin-browser", daemon=True
+        target=open_when_ready, name="cfc-open-admin-browser", daemon=True
     ).start()
 
 
@@ -108,7 +108,7 @@ def _run_supervised_server(settings: Settings, *, open_admin_browser: bool) -> b
 
 
 def init() -> None:
-    """Scaffold config at ~/.fcc/.env (registered as `fcc-init`)."""
+    """Scaffold config at ~/.cfc/.env (registered as `cfc-init`)."""
     config_dir = config_dir_path()
     env_file = managed_env_path()
 
@@ -116,7 +116,7 @@ def init() -> None:
     if migrated_from is not None:
         print(f"Config migrated from {migrated_from} to {env_file}")
         print(
-            "Edit it to set your API keys and model preferences, then run: fcc-server"
+            "Edit it to set your API keys and model preferences, then run: cfc-server"
         )
         return
 
@@ -129,7 +129,7 @@ def init() -> None:
     template = load_env_template()
     env_file.write_text(template, encoding="utf-8")
     print(f"Config created at {env_file}")
-    print("Edit it to set your API keys and model preferences, then run: fcc-server")
+    print("Edit it to set your API keys and model preferences, then run: cfc-server")
 
 
 def _migrate_legacy_env_if_missing() -> Path | None:
@@ -139,7 +139,7 @@ def _migrate_legacy_env_if_missing() -> Path | None:
     if env_file.exists():
         return None
 
-    # TODO: Remove after the ~/.fcc/.env migration has had a release cycle.
+    # TODO: Remove after the ~/.cfc/.env migration has had a release cycle.
     for legacy_env in legacy_env_paths():
         if not legacy_env.is_file():
             continue

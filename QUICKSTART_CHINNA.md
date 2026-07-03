@@ -8,7 +8,7 @@ Your application has been successfully white-labeled as **Chinna-Free-Claude** w
 
 **All 28 file references updated** without breaking any backend functionality:
 
-- ✅ Project name: `free-claude-code` → `chinna-free-claude`
+- ✅ Project/package name: `free-claude-code`
 - ✅ GitHub repository: `Alishahryar1/free-claude-code` → `pichimail/free-claude-code`
 - ✅ Installation scripts for macOS, Linux, Windows updated
 - ✅ README with new OS-specific installation commands

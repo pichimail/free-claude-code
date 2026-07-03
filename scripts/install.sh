@@ -16,7 +16,7 @@ show_usage() {
     cat <<'USAGE'
 Usage: install.sh [options]
 
-Installs Claude Code and Codex if missing, installs or updates uv, Python 3.14.0, and Free Claude Code.
+Installs Claude Code and Codex if missing, installs or updates uv, Python 3.14.0, and Chinna-Free-Claude.
 
 Options:
   --voice-nim              Install NVIDIA NIM voice transcription support.
@@ -302,17 +302,17 @@ package_spec() {
     fi
 
     if [ "$include_nim" -eq 1 ] && [ "$include_local" -eq 1 ]; then
-        printf 'free-claude-code[voice,voice_local] @ %s' "$REPO_GIT_URL"
+        printf 'chinna-free-claude[voice,voice_local] @ %s' "$REPO_GIT_URL"
     elif [ "$include_nim" -eq 1 ]; then
-        printf 'free-claude-code[voice] @ %s' "$REPO_GIT_URL"
+        printf 'chinna-free-claude[voice] @ %s' "$REPO_GIT_URL"
     elif [ "$include_local" -eq 1 ]; then
-        printf 'free-claude-code[voice_local] @ %s' "$REPO_GIT_URL"
+        printf 'chinna-free-claude[voice_local] @ %s' "$REPO_GIT_URL"
     else
         printf '%s' "$REPO_GIT_URL"
     fi
 }
 
-install_free_claude_code() {
+install_chinna_free_claude() {
     spec=$(package_spec)
 
     if [ -n "$torch_backend" ]; then
@@ -337,9 +337,9 @@ install_or_update_uv
 step "Installing Python $PYTHON_VERSION"
 run uv python install "$PYTHON_VERSION"
 
-step "Installing or updating Free Claude Code"
-install_free_claude_code
+step "Installing or updating Chinna-Free-Claude"
+install_chinna_free_claude
 
-printf '\nFree Claude Code is installed. Start the proxy with: fcc-server\n'
-printf 'Run Claude Code with: fcc-claude\n'
-printf 'Run Codex with: fcc-codex\n'
+printf '\nChinna-Free-Claude is installed. Start the proxy with: cfc-server\n'
+printf 'Run Claude Code with: cfc-claude\n'
+printf 'Run Codex with: cfc-codex\n'
